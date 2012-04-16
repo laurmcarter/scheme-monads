@@ -4,13 +4,13 @@
                  bind-exceptT
                  lift-exceptT
                  zero-exceptT
-                 try/catch
-                 from-just)
+                 try/catch)
          (import (chezscheme)
                  (monad match)
                  (monad core))
 
 ;; Maybe monad transformer with failure message
+;; Also equivalent to Either monad
 
 (define unit-exceptT
   (lambda (u)
@@ -37,22 +37,19 @@
              (u `(Success ,a)))))))
 
 (define try/catch
-  (lambda (m f)
-    (match m
-      ((Success ,a) a)
-      ((Exception ,mes) (f mes)))))
-
-(define from-just
-  (lambda (m)
-    (match m
-      ((Success ,a) a)
-      ((Exception ,mes) #f))))
+  (in-transM
+   (lambda (m f)
+     (bind m
+       (lambda (x)
+         (match x
+           ((Success ,a) (unit a))
+           ((Exception ,mes) (f mes))))))))
 
 (define-transformer exceptT
   unit-exceptT
   bind-exceptT
   zero-exceptT
-  (lambda (u b) mplus-err)
+  mplusT-err
   lift-exceptT)
 
 )

@@ -1,18 +1,23 @@
 (library (monad idM)
-         (export idM i-unit i-bind i-map)
+         (export idM
+                 unit-id
+                 bind-id)
          (import (chezscheme)
                  (monad core))
 
 ;; The most useful monad evar! aka let*
 
-(define i-unit
+(define unit-id
   (lambda (a) a))
 
-(define i-bind
+(define bind-id
   (lambda (m f) (f m)))
 
-(define i-map (mapM i-unit i-bind))
-
-(define-monad idM i-unit i-bind mzero-err mplus-err lift-err)
+(define-monad idM
+  unit-id
+  bind-id
+  mzero-err
+  mplus-err
+  lift-err)
 
 )

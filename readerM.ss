@@ -2,7 +2,6 @@
          (export readerM
                  unit-reader
                  bind-reader
-                 map-reader
                  run-reader
                  ask-reader
                  local-reader)
@@ -19,8 +18,6 @@
       (let ((a (m e)))
         (let ((m^ (f a)))
           (m^ e))))))
-
-(define map-reader (mapM unit-reader bind-reader))
 
 (define run-reader
   (lambda (m e)
