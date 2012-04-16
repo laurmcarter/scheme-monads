@@ -72,7 +72,7 @@
   (lambda (s^)
     (mod-state
      (lambda (s)
-       (append s^ s)))))
+       (cons s^ s)))))
 
 (define pop-state
   (lambda ()
