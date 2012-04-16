@@ -1,5 +1,6 @@
 (library (monad core)
          (export doM doM-exp <- == ><
+                 in-transM
                  withM
                  whenM
                  nopM
@@ -8,11 +9,12 @@
                  mzero-err
                  mplus-err
                  lift-err
+                 mzeroT-err
+                 mplusT-err
                  mapM
                  promoteF)
          (import (chezscheme)
                  (monad aux))
-
 
 ;; NB: Any functions that are provided here may NOT use the withM form,
 ;;       they should instead be abstracted with unit/bind.
@@ -31,6 +33,12 @@
            (let ((mlift (M promoteF))
                  (mmap (M mapM)))
              b b* ...))))))
+
+(define-syntax (in-transM x)
+  (syntax-case x ()
+    ((k b b* ...)
+     (with-implicit (k baseM)
+       #'(withM (baseM) b b* ...)))))
 
 (define-syntax (whenM x)
   (syntax-case x ()
@@ -155,5 +163,11 @@
 (define lift-err
   (lambda (m)
     (errorf 'monad "lift undefined")))
+
+(define mzeroT-err
+  (lambda (u) mzero-err))
+
+(define mplusT-err
+  (lambda (u b) mplus-err))
 
 )
