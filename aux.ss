@@ -1,7 +1,8 @@
 (library (monad aux)
          (export mod-in-list
                  let+pair
-                 extend)
+                 extend
+                 make-set)
          (import (chezscheme))
 
 ; mod-in-list takes a tag, a function, and then a
@@ -29,7 +30,7 @@
   (syntax-rules ()
     [(_ (a . r) e . body)
      (let ([t e])
-       (let ([a (car t)])
+       (let+pair ([a (car t)])
          (let-bind r (cdr t) . body)))]
     [(_ () e . body) (let () . body)]
     [(_ a e . body) (let ([a e]) . body)]))
@@ -38,5 +39,13 @@
   (lambda (e^)
     (lambda (e)
       (append e^ e))))
+
+(define make-set
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else
+       (let+pair (((a . d) l))
+         (cons a (make-set (remq a d))))))))
 
 )
