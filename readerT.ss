@@ -33,10 +33,12 @@
   (lambda (m e)
     (m e)))
 
-(define ask-reader
-  (in-transM
-   (lambda ()
-     (lambda (e) (unit e)))))
+(define ask-readerT
+  (lambda (m)
+    (withM m
+      (withM (baseM)
+        (lambda (e)
+          (unit e))))))
 
 (define local-reader
   (lambda (f m)

@@ -1,7 +1,7 @@
 (library (monad core)
          (export doM doM-exp <- == ><
-                 in-transM
                  withM
+                 ;in-transM
                  whenM
                  nopM
                  define-monad
@@ -34,11 +34,11 @@
                  (mmap (M mapM)))
              b b* ...))))))
 
-(define-syntax (in-transM x)
-  (syntax-case x ()
-    ((k b b* ...)
-     (with-implicit (k baseM)
-       #'(withM (baseM) b b* ...)))))
+;(define-syntax (in-transM x)
+;  (syntax-case x ()
+;    ((k b b* ...)
+;     (with-implicit (k baseM)
+;       #'(withM (baseM) b b* ...)))))
 
 (define-syntax (whenM x)
   (syntax-case x ()

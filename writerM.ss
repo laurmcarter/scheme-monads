@@ -1,37 +1,37 @@
-(library (monad writeM)
-         (export writeM
-                 eval-write
-                 exec-write
-                 unit-write
-                 bind-write
-                 init-write
-                 pass-write
-                 listen-write
-                 tell-write
-                 listens-write
-                 censor-write
-                 empty-write
-                 diff-write
-                 union-write
-                 inters-write
-                 set-write)
+(library (monad writerM)
+         (export writerM
+                 eval-writer
+                 exec-writer
+                 unit-writer
+                 bind-writer
+                 init-writer
+                 pass-writer
+                 listen-writer
+                 tell-writer
+                 listens-writer
+                 censor-writer
+                 empty-writer
+                 diff-writer
+                 union-writer
+                 inters-writer
+                 set-writer)
          (import (chezscheme)
                  (monad core)
                  (monad aux))
 
-(define eval-write
+(define eval-writer
   (lambda (e/acc)
     (car e/acc)))
 
-(define exec-write
+(define exec-writer
   (lambda (e/acc)
     (cdr e/acc)))
 
-(define unit-write
+(define unit-writer
   (lambda (a)
     `(,a . ())))
 
-(define bind-write
+(define bind-writer
   (lambda (m f)
     (let+pair (((a . w) m))
       (let ((m^ (f a)))
@@ -39,66 +39,66 @@
           (let ((ww (append w w^)))
             `(,a^ . ,ww)))))))
 
-(define init-write
+(define init-writer
   (lambda (a w)
-    (doM-exp bind-write
-      (tell-write w)
-      (unit-write a))))
+    (doM-exp bind-writer
+      (tell-writer w)
+      (unit-writer a))))
 
-(define pass-write
+(define pass-writer
   (lambda (m)
     (let+pair ((((a . f) . w) m))
       (let ((w^ (f w)))
         `(,a . ,w^)))))
 
-(define listen-write
+(define listen-writer
   (lambda (m)
     (let+pair (((a . w) m))
       `((,a . ,w) . ,w))))
 
-(define tell-write
+(define tell-writer
   (lambda (w)
     `(_ . ,w)))
 
-(define listens-write
+(define listens-writer
   (lambda (f m)
-    (doM-exp bind-write
+    (doM-exp bind-writer
       ((a . w) <- m)
       (w^ == (f w))
-      (unit-write `(,a . ,w^)))))
+      (unit-writer `(,a . ,w^)))))
 
-(define censor-write
+(define censor-writer
   (lambda (f)
     (lambda (m)
-      (pass-write
-       (doM-exp bind-write
+      (pass-writer
+       (doM-exp bind-writer
          (a <- m)
-         (unit-write `(,a . ,f)))))))
+         (unit-writer `(,a . ,f)))))))
 
-(define empty-write (censor-write (lambda (w) '())))
+(define empty-writer (censor-writer (lambda (w) '())))
 
-(define diff-write
+(define diff-writer
   (lambda (w^ m)
-    ((censor-write
+    ((censor-writer
       (lambda (w)
         (difference w w^)))
      m)))
 
-(define union-write
+(define union-writer
   (lambda (w^ m)
-    ((censor-write
+    ((censor-writer
       (lambda (w)
         (union w w^)))
      m)))
 
-(define inters-write
+(define inters-writer
   (lambda (w^ m)
-    ((censor-write
+    ((censor-writer
       (lambda (w)
         (union w w^)))
      m)))
 
-(define set-write (censor-write make-set))
+(define set-writer (censor-writer make-set))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -129,9 +129,9 @@
       ((null? s2) s1)
       (else (difference (remq (car s2) s1) (cdr s2))))))
 
-(define-monad writeM
-  unit-write
-  bind-write
+(define-monad writerM
+  unit-writer
+  bind-writer
   mzero-err
   mplus-err
   lift-err)
