@@ -1,4 +1,4 @@
-scheme-monads: a monad and monad transformer library written in chez scheme
+scheme-monads: a(nother) monad and monad transformer library written in chez scheme
 
 Kyle Carter, Spring 2012
 
