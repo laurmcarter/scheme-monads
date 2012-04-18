@@ -11,9 +11,7 @@
                  put-state
                  mod-state
                  push-state
-                 pop-state
-                 prt-state
-                 prt-state+e)
+                 pop-state)
          (import (chezscheme)
                  (monad core))
 
@@ -80,23 +78,6 @@
       (s <- (get-state))
       (mod-state cdr)
       (unit-state (car s)))))
-
-; prints args sequentially
-(define prt-state
-  (lambda e*
-    (let loop ((e* e*))
-      (cond
-        ((null? e*) (printf "\n"))
-        (else (begin
-                (printf "~a " (car e*))
-                (loop (cdr e*))))))
-    (unit-state '_)))
-
-; prints args sequentially, then prints current state
-(define prt-state+e
-  (lambda e*
-    (lambda (s)
-      ((apply prt-state `(,@e* ":" ,s)) s))))
 
 (define-monad stateM
   unit-state

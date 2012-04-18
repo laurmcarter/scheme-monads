@@ -1,7 +1,7 @@
 (library (monad core)
          (export doM doM-exp <- == ><
                  withM
-                 ;in-transM
+                 printM
                  whenM
                  nopM
                  define-monad
@@ -22,23 +22,32 @@
   (syntax-case x ()
     ((k m b b* ...)
      (with-implicit (k unit bind mmap mzero mplus lift mlift baseM thisM M)
-       #'(let ((M (lambda (f) (f (monad-unit m) (monad-bind m))))
-               (unit (monad-unit m))
-               (bind (monad-bind m))
-               (mzero (monad-zero m))
-               (mplus (monad-plus m))
-               (lift (monad-lift m))
-               (baseM (monad-base m))
-               (thisM m))
-           (let ((mlift (M promoteF))
-                 (mmap (M mapM)))
-             b b* ...))))))
+       #'(let ((mm m))
+           (let ((M (lambda (f) (f mm)))
+                 (unit (monad-unit mm))
+                 (bind (monad-bind mm))
+                 (mzero (monad-zero mm))
+                 (mplus (monad-plus mm))
+                 (lift (monad-lift mm))
+                 (baseM (monad-base mm))
+                 (thisM mm))
+             (let ((mlift (M promoteF))
+                   (mmap (M mapM)))
+               b b* ...)))))))
 
-;(define-syntax (in-transM x)
-;  (syntax-case x ()
-;    ((k b b* ...)
-;     (with-implicit (k baseM)
-;       #'(withM (baseM) b b* ...)))))
+(define-syntax (printM x)
+  (syntax-case x ()
+    ((k e e* ...)
+     (with-implicit (k unit)
+       #'(let loop ((ls (list e e* ...)) (first #t))
+           (if (null? ls)
+               (begin
+                 (printf "\n")
+                 (unit '_))
+               (begin
+                 (unless first (printf " "))
+                 (printf "~a" (car ls))
+                 (loop (cdr ls) #f))))))))
 
 (define-syntax (whenM x)
   (syntax-case x ()
@@ -118,35 +127,47 @@
 
 ;; mapM maps a potentially effectual function over a list
 (define mapM
-  (lambda (u b)
-    (lambda (f)
-      (lambda (e* . more)
-        (if (null? more)
-            (let mapM1 ((e* e*))
-              (cond
-                ((null? e*) (u '()))
-                (else
-                 (doM-exp b
-                   (e <- (f (car e*)))
-                   (r <- (mapM1 (cdr e*)))
-                   (u (cons e r))))))
-            (let mapM-more ((e* e*) (more more))
-              (cond
-                ((null? e*) (u '()))
-                (else
-                 (doM-exp b
-                   (e <- (apply f (car e*) (map car more)))
-                   (r <- (mapM-more (cdr e*) (map cdr more)))
-                   (u (cons e r)))))))))))
+  (lambda (m)
+    (let ((u (monad-unit m))
+          (b (monad-unit m)))
+      (lambda (f)
+        (lambda (e* . more)
+          (if (null? more)
+              (let mapM1 ((e* e*))
+                (cond
+                  ((null? e*) (u '()))
+                  (else
+                   (doM-exp b
+                     (e <- (f (car e*)))
+                     (r <- (mapM1 (cdr e*)))
+                     (u (cons e r))))))
+              (let mapM-more ((e* e*) (more more))
+                (cond
+                  ((null? e*) (u '()))
+                  (else
+                   (doM-exp b
+                     (e <- (apply f (car e*) (map car more)))
+                     (r <- (mapM-more (cdr e*) (map cdr more)))
+                     (u (cons e r))))))))))))
 
 ;; promotes a pure function to operate on monadic values
 (define promoteF
-  (lambda (u b)
-    (lambda (f)
-      (lambda args
-        (doM-exp b
-          (args >< ((mapM u b) (lambda (a) a)))
-          (u (apply f args)))))))
+  (lambda (m)
+    (let ((u (monad-unit m))
+          (b (monad-bind m)))
+      (lambda (f)
+        (lambda args
+          (doM-exp b
+            (args >< ((mapM m) (lambda (a) a)))
+            (u (apply f args))))))))
+
+;(define promoteF
+;  (lambda (u b)
+;    (lambda (f)
+;      (lambda args
+;        (doM-exp b
+;          (args >< ((mapM u b) (lambda (a) a)))
+;          (u (apply f args)))))))
 
 (define-record monad (unit bind zero plus lift base))
 
