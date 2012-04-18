@@ -2,6 +2,7 @@
          (export exceptT
                  unit-exceptT
                  bind-exceptT
+                 bind-except
                  lift-exceptT
                  zero-exceptT
                  try/catch)
@@ -24,6 +25,12 @@
              (match x
                ((Success ,b) (f b))
                ((Exception ,mes) (u `(Exception ,mes)))))))))
+
+(define bind-except
+  (lambda (m f)
+    (match m
+      ((Success ,a) (f a))
+      ((Exception ,mes) `(Exception ,mes)))))
 
 (define zero-exceptT
   (lambda (u)

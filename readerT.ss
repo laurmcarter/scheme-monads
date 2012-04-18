@@ -2,6 +2,7 @@
          (export readerT
                  unit-readerT
                  bind-readerT
+                 bind-reader
                  lift-readerT
                  run-reader
                  ask-readerT
@@ -22,6 +23,11 @@
         (b (m e)
            (lambda (a)
              ((f a) e)))))))
+
+(define bind-reader
+  (lambda (m f)
+    (lambda (e)
+      ((f (m e)) e))))
 
 (define lift-readerT
   (lambda (u b)
