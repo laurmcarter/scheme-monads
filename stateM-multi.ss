@@ -2,6 +2,8 @@
          (export get-state-n
                  put-state-n
                  mod-state-n
+                 push-state-n
+                 pop-state-n
                  lookup-state-n
                  empty-env-n)
          (import (chezscheme)
@@ -30,6 +32,21 @@
   (lambda (n)
     (lambda (f)
       (mod-state (mod-list-n n f)))))
+
+(define push-state-n
+  (lambda (n)
+    (lambda (s^)
+      ((mod-state-n n)
+       (lambda (s)
+         (cons s^ s))))))
+
+(define pop-state-n
+  (lambda (n)
+    (lambda ()
+      (doM-exp bind-state
+        (s <- ((get-state-n n)))
+        ((mod-state-n n) cdr)
+        (unit-state (car s))))))
 
 (define lookup-state-n
   (lambda (n)

@@ -4,7 +4,7 @@
                  bind-readerT
                  lift-readerT
                  run-reader
-                 ask-reader
+                 ask-readerT
                  local-reader)
          (import (chezscheme)
                  (monad core))
