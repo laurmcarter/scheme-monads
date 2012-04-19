@@ -129,7 +129,7 @@
 (define mapM
   (lambda (m)
     (let ((u (monad-unit m))
-          (b (monad-unit m)))
+          (b (monad-bind m)))
       (lambda (f)
         (lambda (e* . more)
           (if (null? more)
