@@ -36,7 +36,7 @@
 (define walk-reader
   (lambda (x)
     (lambda (e)
-      (cons
+      (cond
        ((assq x e) => cdr)
        (else x)))))
 
