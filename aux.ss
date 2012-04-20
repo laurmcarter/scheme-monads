@@ -1,6 +1,6 @@
 (library (monad aux)
          (export mod-in-list
-                 let+pair
+                 letp
                  extend
                  make-set)
          (import (chezscheme))
@@ -19,18 +19,18 @@
                 (cons (cons (car a) (f (cdr a))) d)
                 (cons a ((mod-in-list t f) d))))))))
 
-; let+pair provides match-like pair deconstruction
-(define-syntax let+pair
+; letp provides match-like pair deconstruction
+(define-syntax letp
   (syntax-rules ()
     [(_ () body ...) (let () body ...)]
     [(_ ([b e] rest ...) body ...)
-     (let-bind b e (let+pair (rest ...) body ...))]))
+     (let-bind b e (letp (rest ...) body ...))]))
 
 (define-syntax let-bind
   (syntax-rules ()
     [(_ (a . r) e . body)
      (let ([t e])
-       (let+pair ([a (car t)])
+       (letp ([a (car t)])
          (let-bind r (cdr t) . body)))]
     [(_ () e . body) (let () . body)]
     [(_ a e . body) (let ([a e]) . body)]))
@@ -45,7 +45,7 @@
     (cond
       ((null? l) '())
       (else
-       (let+pair (((a . d) l))
+       (letp (((a . d) l))
          (cons a (make-set (remq a d))))))))
 
 )

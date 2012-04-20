@@ -81,10 +81,10 @@
     ((_ b e) e)
     ;; bind (with pair/list deconstruction)
     ((_ b (v <- e) e* e** ...)
-     (b e (lambda (x) (let+pair ((v x)) (doM-exp b e* e** ...)))))
+     (b e (lambda (x) (letp ((v x)) (doM-exp b e* e** ...)))))
     ;; alias (with pair/list deconstruction)
     ((_ b (v == e) e* e** ...)
-     (let+pair ((v e)) (doM-exp b e* e** ...)))
+     (letp ((v e)) (doM-exp b e* e** ...)))
     ;; transform and rebind
     ((_ b (v >< f) e* e** ...)
      (b (f v) (lambda (v) (doM-exp b e* e** ...))))
