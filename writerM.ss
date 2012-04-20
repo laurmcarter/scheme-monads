@@ -33,9 +33,9 @@
 
 (define bind-writer
   (lambda (m f)
-    (let+pair (((a . w) m))
+    (letp (((a . w) m))
       (let ((m^ (f a)))
-        (let+pair (((a^ . w^) m^))
+        (letp (((a^ . w^) m^))
           (let ((ww (append w w^)))
             `(,a^ . ,ww)))))))
 
@@ -47,13 +47,13 @@
 
 (define pass-writer
   (lambda (m)
-    (let+pair ((((a . f) . w) m))
+    (letp ((((a . f) . w) m))
       (let ((w^ (f w)))
         `(,a . ,w^)))))
 
 (define listen-writer
   (lambda (m)
-    (let+pair (((a . w) m))
+    (letp (((a . w) m))
       `((,a . ,w) . ,w))))
 
 (define tell-writer

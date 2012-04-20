@@ -20,7 +20,7 @@
 (define mapcan
   (lambda (f ls)
     (if (null? ls) '()
-        (let+pair (((a . d) ls))
+        (letp (((a . d) ls))
           (mplus-list (f a) (mapcan f d))))))
 
 (define mzero-list
