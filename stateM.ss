@@ -2,7 +2,6 @@
          (export stateM
                  unit-state
                  bind-state
-                 map-state
                  lookup-state
                  run-state
                  eval-state
@@ -28,8 +27,6 @@
               (s^ (cdr p)))
           (let ((m^ (f a^)))
             (m^ s^)))))))
-
-(define map-state (mapM unit-state bind-state))
 
 (define lookup-state
   (lambda (get)
