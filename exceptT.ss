@@ -44,15 +44,21 @@
              (u `(Success ,a)))))))
 
 (define try/catch
-  (lambda (M)
-    (withM M
-      (withM (baseM)
-        (lambda (m f)
-          (bind m
-            (lambda (x)
-              (match x
-                ((Success ,a) (unit a))
-                ((Exception ,mes) (f mes))))))))))
+  (lambda (m f)
+    (match m
+      ((Success ,a) a)
+      ((Exception ,mes) (f mes)))))
+
+;(define try/catch
+;  (lambda (M)
+;    (withM M
+;      (withM (baseM)
+;        (lambda (m f)
+;          (bind m
+;            (lambda (x)
+;              (match x
+;                ((Success ,a) (unit a))
+;                ((Exception ,mes) (f mes))))))))))
 
 (define-transformer exceptT
   unit-exceptT
