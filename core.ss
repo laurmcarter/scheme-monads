@@ -12,6 +12,7 @@
                  mzeroT-err
                  mplusT-err
                  mapM
+                 foldM
                  promoteF)
          (import (chezscheme)
                  (monad aux))
@@ -21,7 +22,7 @@
 (define-syntax (withM x)
   (syntax-case x ()
     ((k m b b* ...)
-     (with-implicit (k unit bind mmap mzero mplus lift mlift baseM thisM M)
+     (with-implicit (k unit bind mmap mfold mzero mplus lift mlift baseM thisM M)
        #'(let ((mm m))
            (let ((M (lambda (f) (f mm)))
                  (unit (monad-unit mm))
@@ -32,7 +33,8 @@
                  (baseM (monad-base mm))
                  (thisM mm))
              (let ((mlift (M promoteF))
-                   (mmap (M mapM)))
+                   (mmap (M mapM))
+                   (mfold (M foldM)))
                b b* ...)))))))
 
 (define-syntax (printM x)
@@ -143,12 +145,34 @@
                      (u (cons e r))))))
               (let mapM-more ((e* e*) (more more))
                 (cond
-                  ((null? e*) (u '()))
+                  ((or (null? e*) (exists null? more)) (u '()))
                   (else
                    (doM-exp b
                      (e <- (apply f (car e*) (map car more)))
                      (r <- (mapM-more (cdr e*) (map cdr more)))
                      (u (cons e r))))))))))))
+
+(define foldM
+  (lambda (m)
+    (let ((u (monad-unit m))
+          (b (monad-bind m)))
+      (lambda (f a)
+        (lambda (e* . more)
+          (if (null? more)
+              (let foldM1 ((a a) (e* e*))
+                (cond
+                  ((null? e*) (u a))
+                  (else
+                   (doM-exp b
+                     (a <- (f a (car e*)))
+                     (foldM1 a (cdr e*))))))
+              (let foldM-more ((a a) (e* e*) (more more))
+                (cond
+                  ((or (null? e*) (exists null? more)) (u a))
+                  (else
+                   (doM-exp b
+                     (a <- (apply f a (car e*) (map car more)))
+                     (foldM-more a (cdr e*) (map cdr more))))))))))))
 
 ;; promotes a pure function to operate on monadic values
 (define promoteF

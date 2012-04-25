@@ -5,6 +5,7 @@
                  run-reader
                  ask-reader
                  local-reader
+                 lookup-reader
                  walk-reader)
          (import (chezscheme)
                  (monad core))
@@ -32,6 +33,13 @@
   (lambda (f m)
     (lambda (e)
       (m (f e)))))
+
+(define lookup-reader
+  (lambda (x)
+    (lambda (e)
+      (cond
+        ((assq x e) => cdr)
+        (else #f)))))
 
 (define walk-reader
   (lambda (x)
