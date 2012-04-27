@@ -83,8 +83,8 @@
     ;; base case
     ((_ b e) e)
     ;; pretty branching
-    ((_ (ifM t e) e* e** ...)
-     (if t e (doM e* e** ...)))
+    ((_ (ifM t et et* ...) ef ef* ...)
+     (if t (doM et et* ...) (doM ef ef* ...)))
     ;; bind (with pair/list deconstruction)
     ((_ b (v <- e) e* e** ...)
      (b e (lambda (x) (letp ((v x)) (doM-exp b e* e** ...)))))
