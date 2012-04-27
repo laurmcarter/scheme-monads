@@ -3,6 +3,7 @@
                  withM
                  printM
                  whenM
+                 ifM
                  nopM
                  define-monad
                  define-transformer
@@ -78,9 +79,12 @@
 ;;                    ideally would match simultaneously
 ;; doM *explicit*
 (define-syntax doM-exp
-  (syntax-rules (<- == ><)
+  (syntax-rules (<- == >< ifM)
     ;; base case
     ((_ b e) e)
+    ;; pretty branching
+    ((_ (ifM t e) e* e** ...)
+     (if t e (doM e* e** ...)))
     ;; bind (with pair/list deconstruction)
     ((_ b (v <- e) e* e** ...)
      (b e (lambda (x) (letp ((v x)) (doM-exp b e* e** ...)))))
@@ -97,6 +101,9 @@
     ;; bind hukarz
     ((_ b e e* e** ...)
      (b e (lambda (_) (doM-exp b e* e** ...))))))
+
+(define-syntax (ifM x)
+  (syntax-violation #f "misplaced aux keyword" x))
 
 (define-syntax (<- x)
   (syntax-violation #f "misplaced aux keyword" x))
