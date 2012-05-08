@@ -7,58 +7,50 @@
                  zero-exceptT
                  try/catch)
          (import (chezscheme)
-                 (monad match)
-                 (monad core))
+                 (monad core)
+                 (monad aux))
 
 ;; Maybe monad transformer with failure message
 ;; Also equivalent to Either monad
 
 (define unit-exceptT
-  (lambda (u)
+  (lambda (unit bind)
     (lambda (a)
-      (u `(Success ,a)))))
+      (unit `(Success . ,a)))))
 
 (define bind-exceptT
-  (lambda (u b)
+  (lambda (unit bind)
     (lambda (m f)
-      (b m (lambda (x)
-             (match x
-               ((Success ,b) (f b))
-               ((Exception ,mes) (u `(Exception ,mes)))))))))
+      (bind m (lambda (x)
+                (letp (((t . a) x))
+                  (case t
+                    ((Success) (f a))
+                    ((Exception) (unit `(Exception . ,a))))))))))
 
 (define bind-except
   (lambda (m f)
-    (match m
-      ((Success ,a) (f a))
-      ((Exception ,mes) `(Exception ,mes)))))
+    (letp (((t . a) m))
+      (case t
+        ((Success) (f a))
+        ((Exception) `(Exception . ,a))))))
 
 (define zero-exceptT
-  (lambda (u)
+  (lambda (unit bind)
     (lambda (mes)
-      (u `(Exception ,mes)))))
+      (unit `(Exception . ,mes)))))
 
 (define lift-exceptT
-  (lambda (u b)
+  (lambda (unit bind)
     (lambda (m)
-      (b m (lambda (a)
-             (u `(Success ,a)))))))
+      (bind m (lambda (a)
+                (unit `(Success . ,a)))))))
 
 (define try/catch
   (lambda (m f)
-    (match m
-      ((Success ,a) a)
-      ((Exception ,mes) (f mes)))))
-
-;(define try/catch
-;  (lambda (M)
-;    (withM M
-;      (withM (baseM)
-;        (lambda (m f)
-;          (bind m
-;            (lambda (x)
-;              (match x
-;                ((Success ,a) (unit a))
-;                ((Exception ,mes) (f mes))))))))))
+    (letp (((t . a) m))
+      (case t
+        ((Success) a)
+        ((Exception) (f a))))))
 
 (define-transformer exceptT
   unit-exceptT

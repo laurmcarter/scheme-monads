@@ -11,8 +11,7 @@
                  (monad stateM)
                  (monad aux))
 
-;; states reference by list index
-;; 
+;; states referenced by index
 
 (define get-state-n
   (withM stateM
@@ -22,11 +21,10 @@
              (unit (list-ref e n)))))))
 
 (define put-state-n
-  (withM stateM
-    (lambda (n)
-      (lambda (s^)
-        ((mod-state-n n)
-         (lambda (s) s^))))))
+  (lambda (n)
+    (lambda (s^)
+      ((mod-state-n n)
+       (lambda (s) s^)))))
 
 (define mod-state-n
   (lambda (n)
@@ -37,16 +35,15 @@
   (lambda (n)
     (lambda (s^)
       ((mod-state-n n)
-       (lambda (s)
-         (cons s^ s))))))
+       (extend s^)))))
 
 (define pop-state-n
-  (lambda (n)
-    (lambda ()
-      (doM-exp bind-state
-        (s <- ((get-state-n n)))
-        ((mod-state-n n) cdr)
-        (unit-state (car s))))))
+  (withM stateM
+    (lambda (n)
+      (lambda ()
+        (doM (s <- ((get-state-n n)))
+             ((mod-state-n n) cdr)
+             (unit (car s)))))))
 
 (define lookup-state-n
   (lambda (n)

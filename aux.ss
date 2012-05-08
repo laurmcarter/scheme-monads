@@ -2,6 +2,7 @@
          (export mod-in-list
                  letp
                  extend
+                 extend*
                  make-set)
          (import (chezscheme))
 
@@ -36,6 +37,11 @@
     [(_ a e . body) (let ([a e]) . body)]))
 
 (define extend
+  (lambda (x)
+    (lambda (e)
+      (cons x e))))
+
+(define extend*
   (lambda (e^)
     (lambda (e)
       (append e^ e))))

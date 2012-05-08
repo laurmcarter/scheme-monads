@@ -5,8 +5,6 @@
          (import (chezscheme)
                  (monad core))
 
-;; The most useful monad evar! aka let*
-
 (define unit-id
   (lambda (a) a))
 

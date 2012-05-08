@@ -31,10 +31,11 @@
 (define lookup-state
   (lambda (get)
     (lambda (x)
-      (doM-exp bind-state
-        (env <- (get))
-        (x^ == (assq x env))
-        (unit-state (if x^ (cdr x^) x))))))
+      (doM (env <- (get))
+           (unit-state
+            (cond
+              ((assq x env) => cdr)
+              (else x)))))))
 
 (define run-state
   (lambda (m s)
@@ -71,10 +72,9 @@
 
 (define pop-state
   (lambda ()
-    (doM-exp bind-state
-      (s <- (get-state))
-      (mod-state cdr)
-      (unit-state (car s)))))
+    (doM (s <- (get-state))
+         (mod-state cdr)
+         (unit-state (car s)))))
 
 (define-monad stateM
   unit-state

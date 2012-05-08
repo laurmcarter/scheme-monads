@@ -11,16 +11,16 @@
                  (monad core))
 
 (define unit-readerT
-  (lambda (u)
+  (lambda (unit bind)
     (lambda (a)
       (lambda (e)
-        (u a)))))
+        (unit a)))))
 
 (define bind-readerT
-  (lambda (u b)
+  (lambda (unit bind)
     (lambda (m f)
       (lambda (e)
-        (b (m e)
+        (bind (m e)
            (lambda (a)
              ((f a) e)))))))
 
@@ -30,7 +30,7 @@
       ((f (m e)) e))))
 
 (define lift-readerT
-  (lambda (u b)
+  (lambda (unit bind)
     (lambda (m)
       (lambda (e)
         m))))
@@ -40,11 +40,9 @@
     (m e)))
 
 (define ask-readerT
-  (lambda (m)
-    (withM m
-      (withM (baseM)
-        (lambda (e)
-          (unit e))))))
+  (withM (baseM)
+    (lambda (e)
+      (unit e))))
 
 (define local-reader
   (lambda (f m)

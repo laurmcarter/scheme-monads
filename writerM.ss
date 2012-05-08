@@ -19,13 +19,9 @@
                  (monad core)
                  (monad aux))
 
-(define eval-writer
-  (lambda (e/acc)
-    (car e/acc)))
+(define eval-writer car)
 
-(define exec-writer
-  (lambda (e/acc)
-    (cdr e/acc)))
+(define exec-writer cdr)
 
 (define unit-writer
   (lambda (a)
@@ -40,10 +36,10 @@
             `(,a^ . ,ww)))))))
 
 (define init-writer
-  (lambda (a w)
-    (doM-exp bind-writer
-      (tell-writer w)
-      (unit-writer a))))
+  (withM writerM
+    (lambda (a w)
+      (doM (tell-writer w)
+           (unit a)))))
 
 (define pass-writer
   (lambda (m)
@@ -61,19 +57,18 @@
     `(_ . ,w)))
 
 (define listens-writer
-  (lambda (f m)
-    (doM-exp bind-writer
-      ((a . w) <- m)
-      (w^ == (f w))
-      (unit-writer `(,a . ,w^)))))
+  (withM writerM
+    (lambda (f m)
+      (doM ((a . w) <- m)
+           (w^ == (f w))
+           (unit `(,a . ,w^))))))
 
 (define censor-writer
   (lambda (f)
     (lambda (m)
       (pass-writer
-       (doM-exp bind-writer
-         (a <- m)
-         (unit-writer `(,a . ,f)))))))
+       (doM (a <- m)
+            (unit `(,a . ,f)))))))
 
 (define empty-writer (censor-writer (lambda (w) '())))
 
