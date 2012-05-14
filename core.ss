@@ -1,5 +1,6 @@
 (library (monad core)
          (export unit bind mzero mplus lift baseM
+                 current-monad
                  doM <- == ><
                  withM
                  printM
@@ -19,23 +20,42 @@
          (import (chezscheme)
                  (monad aux))
 
+(define-syntax unit (identifier-syntax (monad-unit (current-monad))))
+(define-syntax bind (identifier-syntax (monad-bind (current-monad))))
+(define-syntax mzero (identifier-syntax (monad-zero (current-monad))))
+(define-syntax mplus (identifier-syntax (monad-plus (current-monad))))
+(define-syntax lift (identifier-syntax (monad-lift (current-monad))))
+(define-syntax baseM (identifier-syntax (monad-unit (current-monad))))
+
 (define-syntax withM
   (syntax-rules ()
     ((_ m b b* ...)
-     (parameterize ((unit (monad-unit m))
-                    (bind (monad-bind m))
-                    (mzero (monad-zero m))
-                    (mplus (monad-plus m))
-                    (lift (monad-lift m))
-                    (baseM (monad-base m)))
+     (parameterize ((current-monad m))
        (begin
          b b* ...)))))
 
+(define monad-error
+  (lambda (t)
+    (lambda args
+      (errorf t "undefined"))))
+
+(define current-monad (make-parameter 'dummy))
+
 (define printM
-  (lambda (fstr . args)
-    (begin
-      (pretty-print (apply format fstr args))
-      (nopM))))
+  (lambda (fst . more)
+    (if (null? more)
+        (begin
+          (pretty-print fst)
+          (nopM))
+        (begin
+          (printf "~a" fst)
+          (let loop ((more more))
+            (cond
+              ((null? more) (begin (newline) (nopM)))
+              (else
+               (begin
+                 (printf " ~a" (car more))
+                 (loop (cdr more) )))))))))
 
 (define-syntax whenM
   (syntax-rules ()
@@ -175,19 +195,14 @@
     ((_ id u b z p l)
      (define id
        (lambda (m)
-         (let ((unit (monad-unit m))
-               (bind (monad-bind m)))
-           (make-monad (u unit bind)
-                       (b unit bind)
-                       (z unit bind)
-                       (p unit bind)
-                       (l unit bind)
-                       (lambda () m))))))))
-
-(define monad-error
-  (lambda (t)
-    (lambda args
-      (errorf t "undefined"))))
+         (withM m
+           (make-monad
+            (u unit bind)
+            (b unit bind)
+            (z unit bind)
+            (p unit bind)
+            (l unit bind)
+            (lambda () m))))))))
 
 (define mzero-err (monad-error 'mzero))
 (define mplus-err (monad-error 'mplus))
@@ -196,12 +211,5 @@
 
 (define mzeroT-err (lambda (u b) mzero-err))
 (define mplusT-err (lambda (u b) mplus-err))
-
-(define unit (make-parameter (monad-error 'unit)))
-(define bind (make-parameter (monad-error 'bind)))
-(define mzero (make-parameter mzero-err))
-(define mplus (make-parameter mplus-err))
-(define lift (make-parameter lift-err))
-(define baseM (make-parameter base-err))
 
 )
