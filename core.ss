@@ -20,12 +20,29 @@
          (import (chezscheme)
                  (monad aux))
 
-(define-syntax unit (identifier-syntax (monad-unit (current-monad))))
-(define-syntax bind (identifier-syntax (monad-bind (current-monad))))
-(define-syntax mzero (identifier-syntax (monad-zero (current-monad))))
-(define-syntax mplus (identifier-syntax (monad-plus (current-monad))))
-(define-syntax lift (identifier-syntax (monad-lift (current-monad))))
-(define-syntax baseM (identifier-syntax (monad-unit (current-monad))))
+(define-syntax define-monad-op
+  (syntax-rules ()
+    ((_ id f)
+     (define-syntax id
+       (identifier-syntax
+        (let ((t (current-monad)))
+          (if (monad? t)
+              (f t)
+              (errorf 'id "~a is not a monad" t))))))))
+
+(define-monad-op unit monad-unit)
+(define-monad-op bind monad-bind)
+(define-monad-op mzero monad-zero)
+(define-monad-op mplus monad-plus)
+(define-monad-op lift monad-lift)
+(define-monad-op baseM monad-base)
+
+;(define-syntax unit (identifier-syntax (check-monad monad-unit)))
+;(define-syntax bind (identifier-syntax (check-monad monad-bind)))
+;(define-syntax mzero (identifier-syntax (check-monad monad-zero)))
+;(define-syntax mplus (identifier-syntax (check-monad monad-plus)))
+;(define-syntax lift (identifier-syntax (check-monad monad-lift)))
+;(define-syntax baseM (identifier-syntax (check-monad monad-base)))
 
 (define-syntax withM
   (syntax-rules ()
