@@ -28,7 +28,7 @@
         (let ((t (current-monad)))
           (if (monad? t)
               (f t)
-              (errorf 'id "~a is not a monad" t))))))))
+              (errorf 'id "monad is undefined"))))))))
 
 (define-monad-op unit monad-unit)
 (define-monad-op bind monad-bind)
