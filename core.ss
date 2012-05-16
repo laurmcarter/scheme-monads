@@ -8,7 +8,7 @@
                  nopM
                  mapM
                  foldM
-                 liftM liftM2 liftM3 liftM4 liftM5
+                 liftM
                  define-monad
                  define-transformer
                  monad-error
@@ -144,43 +144,9 @@
 
 (define liftM
   (lambda (f)
-    (lambda (m)
-      (doM (x <- m)
-           (unit (f x))))))
-
-(define liftM2
-  (lambda (f)
-    (lambda (m1 m2)
-      (doM (x1 <- m1)
-           (x2 <- m2)
-           (unit (f x1 x2))))))
-
-(define liftM3
-  (lambda (f)
-    (lambda (m1 m2 m3)
-      (doM (x1 <- m1)
-           (x2 <- m2)
-           (x3 <- m3)
-           (unit (f x1 x2 x3))))))
-
-(define liftM4
-  (lambda (f)
-    (lambda (m1 m2 m3 m4)
-      (doM (x1 <- m1)
-           (x2 <- m2)
-           (x3 <- m3)
-           (x4 <- m4)
-           (unit (f x1 x2 x3 x4))))))
-
-(define liftM5
-  (lambda (f)
-    (lambda (m1 m2 m3 m4 m5)
-      (doM (x1 <- m1)
-           (x2 <- m2)
-           (x3 <- m3)
-           (x4 <- m4)
-           (x5 <- m5)
-           (unit (f x1 x2 x3 x4 x5))))))
+    (lambda args
+      (doM (args >< (lambda (x) x))
+           (unit (apply f args))))))
 
 (define-record monad (unit bind zero plus lift base))
 
